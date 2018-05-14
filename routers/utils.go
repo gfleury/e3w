@@ -2,10 +2,11 @@ package routers
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
-	"golang.org/x/net/context"
 	"io/ioutil"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"golang.org/x/net/context"
 )
 
 const (
