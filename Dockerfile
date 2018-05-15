@@ -1,4 +1,4 @@
-FROM golang:1.8 as backend
+FROM golang:1.9 as backend
 RUN mkdir -p /go/src/github.com/gfleury/e3w
 ADD . /go/src/github.com/gfleury/e3w
 WORKDIR /go/src/github.com/gfleury/e3w

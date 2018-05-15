@@ -1,8 +1,9 @@
 package routers
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type response struct {
@@ -21,6 +22,12 @@ func resp(handler respHandler) gin.HandlerFunc {
 		} else {
 			r.Result = result
 		}
-		c.JSON(http.StatusOK, r)
+		if r.Err == "Not authorized" {
+			c.Header("WWW-Authenticate", "Basic realm=\"Restricted\"")
+			c.AbortWithStatus(401)
+			c.JSON(http.StatusUnauthorized, r)
+		} else {
+			c.JSON(http.StatusOK, r)
+		}
 	}
 }

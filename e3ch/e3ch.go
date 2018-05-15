@@ -2,6 +2,7 @@ package e3ch
 
 import (
 	"crypto/tls"
+
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/pkg/transport"
 	"github.com/soyking/e3ch"

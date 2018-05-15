@@ -1,16 +1,14 @@
 package routers
 
 import (
+	"errors"
+	"net/http"
+
 	"github.com/coreos/etcd/clientv3"
-	"github.com/gfleury/e3ch"
-	"github.com/gfleury/e3w/conf"
 	"github.com/gfleury/e3w/e3ch"
 	"github.com/gin-gonic/gin"
-)
-
-const (
-	ETCD_USERNAME_HEADER = "X-Etcd-Username"
-	ETCD_PASSWORD_HEADER = "X-Etcd-Password"
+	"github.com/soyking/e3ch"
+	"github.com/soyking/e3w/conf"
 )
 
 type e3chHandler func(*gin.Context, *client.EtcdHRCHYClient) (interface{}, error)
@@ -23,10 +21,16 @@ func withE3chGroup(e3chClt *client.EtcdHRCHYClient, config *conf.Config) groupHa
 			clt := e3chClt
 			if config.Auth {
 				var err error
-				username := c.Request.Header.Get(ETCD_USERNAME_HEADER)
-				password := c.Request.Header.Get(ETCD_PASSWORD_HEADER)
+				username, password, authOK := c.Request.BasicAuth()
+				if authOK == false || (username == "" || password == "") {
+					return nil, errors.New("Not authorized")
+				}
+
 				clt, err = e3ch.CloneE3chClient(username, password, e3chClt)
 				if err != nil {
+					if err.Error() == "etcdserver: authentication failed, invalid user ID or password" {
+						return nil, errors.New("Not authorized")
+					}
 					return nil, err
 				}
 				defer clt.EtcdClient().Close()
@@ -46,6 +50,13 @@ func etcdWrapper(h etcdHandler) e3chHandler {
 
 func InitRouters(g *gin.Engine, config *conf.Config, e3chClt *client.EtcdHRCHYClient) {
 	g.GET("/", func(c *gin.Context) {
+		username, password, authOK := c.Request.BasicAuth()
+		if authOK == false || (username == "" || password == "") {
+			c.Header("WWW-Authenticate", "Basic realm=\"Restricted\"")
+			c.AbortWithStatus(401)
+			c.JSON(http.StatusUnauthorized, map[string]string{"message": "401 errors"})
+			return
+		}
 		c.File("./static/dist/index.html")
 	})
 	g.Static("/public", "./static/dist")

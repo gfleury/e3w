@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/coreos/etcd/version"
-	"github.com/gfleury/e3w/conf"
 	"github.com/gfleury/e3w/e3ch"
 	"github.com/gfleury/e3w/routers"
 	"github.com/gin-gonic/gin"
+	"github.com/soyking/e3w/conf"
 )
 
 const (
