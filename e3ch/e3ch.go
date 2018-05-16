@@ -9,19 +9,20 @@ import (
 	"github.com/soyking/e3w/conf"
 )
 
+var tlsConfig *tls.Config
+
 func NewE3chClient(config *conf.Config) (*client.EtcdHRCHYClient, error) {
-	var tlsConfig *tls.Config
 	var err error
-	if config.CertFile != "" && config.KeyFile != "" && config.CAFile != "" {
-		tlsInfo := transport.TLSInfo{
-			CertFile:      config.CertFile,
-			KeyFile:       config.KeyFile,
-			TrustedCAFile: config.CAFile,
-		}
-		tlsConfig, err = tlsInfo.ClientConfig()
-		if err != nil {
-			return nil, err
-		}
+
+	tlsInfo := transport.TLSInfo{
+		CertFile:           config.CertFile,
+		KeyFile:            config.KeyFile,
+		TrustedCAFile:      config.CAFile,
+		InsecureSkipVerify: true,
+	}
+	tlsConfig, err = tlsInfo.ClientConfig()
+	if err != nil {
+		return nil, err
 	}
 
 	clt, err := clientv3.New(clientv3.Config{
@@ -46,6 +47,7 @@ func CloneE3chClient(username, password string, client *client.EtcdHRCHYClient) 
 		Endpoints: client.EtcdClient().Endpoints(),
 		Username:  username,
 		Password:  password,
+		TLS:       tlsConfig,
 	})
 	if err != nil {
 		return nil, err
