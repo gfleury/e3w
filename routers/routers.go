@@ -49,6 +49,9 @@ func etcdWrapper(h etcdHandler) e3chHandler {
 }
 
 func InitRouters(g *gin.Engine, config *conf.Config, e3chClt *client.EtcdHRCHYClient) {
+	g.GET("/healthz", func(c *gin.Context) {
+		c.String(200, "alface")
+	})
 	g.GET("/", func(c *gin.Context) {
 		username, password, authOK := c.Request.BasicAuth()
 		if authOK == false || (username == "" || password == "") {
